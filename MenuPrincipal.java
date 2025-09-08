@@ -45,7 +45,6 @@ public class MenuPrincipal {
             }
         }
 
-        System.out.println("\nObrigado por usar o sistema!");
         scanner.close();
     }
 
