@@ -1,0 +1,47 @@
+Classes Criadas com Comentários Completos:
+
+ProcessState.java - Enumeração dos estados de processo (NEW, READY, RUNNING, BLOCKED, TERMINATED) com documentação sobre cada estado
+
+PCB.java - Process Control Block completamente comentado:
+
+Armazena informações do processo (ID, nome, tabela de páginas)
+Contexto da CPU (PC, registradores, interrupções)
+Métodos saveContext() e restoreContext() documentados
+Scheduler.java - Escalonador round-robin com comentários detalhados:
+
+Estruturas de dados (fila de prontos, processo atual)
+Controle de tempo da fatia (currentTime/timeSlice)
+Método addProcess() - criação de processos
+Método schedule() - coração do escalonamento
+Método shouldPreempt() - controle de preempção
+Métodos auxiliares completamente documentados
+ProcessManager.java - Gerenciador de alto nível com comentários:
+
+Integração entre escalonador, memória e programas
+Método loadProgram() - carregamento de processos
+Método execAll() - comando execAll implementado
+Métodos startContinuousExecution() e stopContinuousExecution() - execução contínua
+Método executeCurrentProcess() - simulação de execução
+TesteEscalonamento.java - Classe de teste abrangente:
+
+Testa carregamento de múltiplos processos
+Valida comando execAll
+Demonstra execução contínua
+Testa adição de processos durante execução
+6 programas de teste diferentes documentados
+Classes Modificadas com Comentários:
+
+CPU.java - Adicionados métodos setReg(), setPC(), getInterrupt()
+Interrupts.java - Adicionada interrupção intTimer
+InterruptHandling.java - Tratamento de interrupção de timer
+SysCallHandling.java - Tratamento adequado da instrução STOP
+SO.java - Integração completa com ProcessManager
+Funcionalidades Implementadas e Comentadas:
+
+✅ Escalonamento por tempo: Processos executam por Delta=5 ciclos com controle detalhado
+✅ Salvamento de contexto: PC e registradores salvos no PCB com métodos documentados
+✅ Comando execAll: Implementado com comentários sobre o fluxo de execução
+✅ Execução contínua: Thread separada com documentação sobre funcionamento
+✅ Fim de processo: Instrução STOP com liberação de recursos comentada
+✅ Gerenciamento de memória: Alocação/desalocação automática documentada
+✅ Fila de prontos: Round-robin com explicações sobre FIFO
