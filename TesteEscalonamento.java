@@ -1,176 +1,515 @@
+import java.util.Scanner;
+
 /**
- * Classe de Teste do Sistema de Escalonamento
+ * Teste Interativo do Sistema de Escalonamento
  *
- * Programa de teste abrangente que valida todas as funcionalidades
- * implementadas no sistema de escalonamento de processos:
- *
- * 1. Carregamento de múltiplos processos
- * 2. Comando execAll (execução escalonada)
- * 3. Execução contínua em background
- * 4. Adição de processos durante execução
- * 5. Salvamento/restauração de contexto
- * 6. Preempção por tempo
- * 7. Término de processos
- * 8. Gerenciamento de memória
+ * Demonstra todas as funcionalidades do escalonamento de processos:
+ * - Carregamento de multiplos processos
+ * - Comando execAll (execucao escalonada)
+ * - Execucao continua em background
+ * - Adicao de processos durante execucao
+ * - Salvamento/restauracao de contexto
+ * - Preempcao por tempo
  */
 public class TesteEscalonamento {
 
+        private static Scanner scanner = new Scanner(System.in);
+        private static HW hw;
+        private static SO so;
+
         public static void main(String[] args) {
-                // === INICIALIZAÇÃO DO SISTEMA ===
-                HW hw = new HW(1024, 16); // 1024 palavras de memória, páginas de 16 palavras
-                SO so = new SO(hw); // Sistema operacional com escalonamento
+                System.out.println("========================================");
+                System.out.println("  SISTEMA DE ESCALONAMENTO DE PROCESSOS");
+                System.out.println("      Demonstracao Interativa");
+                System.out.println("========================================");
+                System.out.println();
 
-                // Cria programas de teste no repositório
-                criarProgramasTeste(so.programs);
+                // Inicialização
+                inicializarSistema();
 
-                System.out.println("=== TESTE DO SISTEMA DE ESCALONAMENTO ===\n");
+                // Menu principal
+                menuPrincipal();
 
-                // === TESTE 1: CARREGAMENTO DE PROCESSOS ===
-                System.out.println("1. Carregando processos...");
-                so.loadProgram("programa1"); // Programa com operações matemáticas
-                so.loadProgram("programa2"); // Programa com loop
-                so.loadProgram("programa3"); // Programa com operações de memória
-
-                System.out.println("\n2. Status inicial do sistema:");
-                so.showSystemStatus();
-
-                // === TESTE 2: COMANDO EXECALL ===
-                System.out.println("\n3. Executando todos os processos (execAll):");
-                so.execAll(); // Executa todos os processos de forma escalonada
-
-                System.out.println("\n4. Status após execAll:");
-                so.showSystemStatus();
-
-                // === TESTE 3: EXECUÇÃO CONTÍNUA ===
-                System.out.println("\n5. Testando execução contínua...");
-
-                // Carrega mais processos para testar execução contínua
-                so.loadProgram("programa4"); // Programa Fibonacci
-                so.loadProgram("programa5"); // Programa simples
-
-                // Inicia execução contínua em thread separada
-                so.startContinuousExecution();
-
-                // === TESTE 4: COMANDOS DURANTE EXECUÇÃO CONTÍNUA ===
-                try {
-                        Thread.sleep(2000); // Deixa executar por 2 segundos
-
-                        System.out.println("\n6. Status durante execução contínua:");
-                        so.showSystemStatus();
-
-                        // Testa adição de processo durante execução contínua
-                        System.out.println("\n7. Adicionando processo durante execução contínua:");
-                        so.loadProgram("programa6"); // Programa com syscall
-
-                        Thread.sleep(3000); // Mais 3 segundos de execução
-
-                        // Para a execução contínua
-                        System.out.println("\n8. Parando execução contínua:");
-                        so.stopContinuousExecution();
-
-                        Thread.sleep(500); // Aguarda thread parar
-
-                } catch (InterruptedException e) {
-                        e.printStackTrace();
-                }
-
-                // === RESULTADO FINAL ===
-                System.out.println("\n9. Status final do sistema:");
-                so.showSystemStatus();
-
-                System.out.println("\n=== TESTE CONCLUÍDO ===");
+                System.out.println("\nDemonstracao do escalonamento finalizada!");
+                scanner.close();
         }
 
         /**
-         * Cria programas de teste para validar o sistema de escalonamento
-         *
-         * Cada programa testa aspectos diferentes do sistema:
-         * - Programa 1: Operações matemáticas básicas
-         * - Programa 2: Loop com controle de fluxo (testa preempção)
-         * - Programa 3: Operações de memória (load/store)
-         * - Programa 4: Programa mais longo (Fibonacci - testa múltiplas preempções)
-         * - Programa 5: Programa muito simples (execução rápida)
-         * - Programa 6: Programa com syscall (testa chamadas de sistema)
+         * Inicializa o sistema de escalonamento
          */
-        private static void criarProgramasTeste(Programs programs) {
+        private static void inicializarSistema() {
+                System.out.println("INICIALIZACAO DO SISTEMA DE ESCALONAMENTO");
+                System.out.println("==========================================");
+                System.out.print("Pressione ENTER para inicializar...");
+                scanner.nextLine();
 
-                // === PROGRAMA 1: OPERAÇÕES MATEMÁTICAS ===
-                // Testa operações aritméticas básicas e armazenamento
-                Word[] prog1 = {
-                                new Word(Opcode.LDI, 0, -1, 10), // R0 = 10
-                                new Word(Opcode.LDI, 1, -1, 5), // R1 = 5
-                                new Word(Opcode.ADD, 2, 0, 1), // R2 = R0 + R1 = 15
-                                new Word(Opcode.MULT, 3, 2, 1), // R3 = R2 * R1 = 75
-                                new Word(Opcode.STD, 3, -1, 20), // MEM[20] = R3 = 75
-                                new Word(Opcode.STOP, -1, -1, -1) // Termina processo
-                };
+                System.out.println("\nCriando hardware (1024 palavras, paginas de 16)...");
+                hw = new HW(1024, 16);
 
-                // === PROGRAMA 2: LOOP COM CONTROLE ===
-                // Testa controle de fluxo e preempção durante loops
-                Word[] prog2 = {
-                                new Word(Opcode.LDI, 0, -1, 0), // R0 = 0 (contador)
-                                new Word(Opcode.LDI, 1, -1, 5), // R1 = 5 (limite do loop)
-                                new Word(Opcode.ADDI, 0, -1, 1), // R0++ (incrementa contador)
-                                new Word(Opcode.SUB, 2, 1, 0), // R2 = R1 - R0 (testa condição)
-                                new Word(Opcode.JMPIG, 2, -1, 2), // Se R2 > 0, volta para linha 2
-                                new Word(Opcode.STD, 0, -1, 25), // MEM[25] = contador final
-                                new Word(Opcode.STOP, -1, -1, -1) // Termina processo
-                };
+                System.out.println("Inicializando Sistema Operacional com escalonamento...");
+                so = new SO(hw);
 
-                // === PROGRAMA 3: OPERAÇÕES DE MEMÓRIA ===
-                // Testa load/store e manipulação de dados na memória
-                Word[] prog3 = {
-                                new Word(Opcode.LDI, 0, -1, 100), // R0 = 100
-                                new Word(Opcode.STD, 0, -1, 30), // MEM[30] = 100
-                                new Word(Opcode.LDD, 1, -1, 30), // R1 = MEM[30] = 100
-                                new Word(Opcode.ADDI, 1, -1, 50), // R1 = R1 + 50 = 150
-                                new Word(Opcode.STD, 1, -1, 31), // MEM[31] = 150
-                                new Word(Opcode.STOP, -1, -1, -1) // Termina processo
-                };
+                System.out.println("\nSistema de escalonamento inicializado!");
+                System.out.println("Caracteristicas do escalonamento:");
+                System.out.println("- Politica: Round-Robin");
+                System.out.println("- Fatia de tempo (Delta): 5 ciclos");
+                System.out.println("- Preempcao automatica");
+                System.out.println("- Salvamento/restauracao de contexto");
 
-                // === PROGRAMA 4: FIBONACCI (PROGRAMA LONGO) ===
-                // Testa múltiplas preempções e salvamento/restauração de contexto
-                Word[] prog4 = {
-                                new Word(Opcode.LDI, 0, -1, 1), // R0 = 1 (fib anterior)
-                                new Word(Opcode.LDI, 1, -1, 1), // R1 = 1 (fib atual)
-                                new Word(Opcode.ADD, 2, 0, 1), // R2 = R0 + R1 (próximo fib)
-                                new Word(Opcode.MOVE, 0, -1, 1), // R0 = R1 (atualiza anterior)
-                                new Word(Opcode.MOVE, 1, -1, 2), // R1 = R2 (atualiza atual)
-                                new Word(Opcode.STD, 2, -1, 40), // MEM[40] = fibonacci atual
-                                new Word(Opcode.SUBI, 2, -1, 10), // R2 = R2 - 10 (testa parada)
-                                new Word(Opcode.JMPIL, 2, -1, 2), // Se R2 < 0, continua loop
-                                new Word(Opcode.STOP, -1, -1, -1) // Termina quando fib >= 10
-                };
+                pausar();
+        }
 
-                // === PROGRAMA 5: PROGRAMA SIMPLES ===
-                // Execução muito rápida para testar escalonamento com processos curtos
-                Word[] prog5 = {
-                                new Word(Opcode.LDI, 0, -1, 42), // R0 = 42 (resposta universal)
-                                new Word(Opcode.STD, 0, -1, 50), // MEM[50] = 42
-                                new Word(Opcode.STOP, -1, -1, -1) // Termina imediatamente
-                };
+        /**
+         * Menu principal da demonstração
+         */
+        private static void menuPrincipal() {
+                boolean continuar = true;
 
-                // === PROGRAMA 6: SYSCALL ===
-                // Testa chamadas de sistema e saída de dados
-                Word[] prog6 = {
-                                new Word(Opcode.LDI, 8, -1, 2), // R8 = 2 (código syscall OUT)
-                                new Word(Opcode.LDI, 9, -1, 60), // R9 = 60 (endereço do dado)
-                                new Word(Opcode.LDI, 0, -1, 999), // R0 = 999 (valor a imprimir)
-                                new Word(Opcode.STD, 0, -1, 60), // MEM[60] = 999
-                                new Word(Opcode.SYSCALL, -1, -1, -1), // Chama syscall para imprimir
-                                new Word(Opcode.STOP, -1, -1, -1) // Termina processo
-                };
+                while (continuar) {
+                        System.out.println("\n========================================");
+                        System.out.println("    MENU - ESCALONAMENTO");
+                        System.out.println("========================================");
+                        System.out.println();
+                        System.out.println("1. Carregar multiplos processos");
+                        System.out.println("2. Demonstrar comando execAll");
+                        System.out.println("3. Demonstrar execucao continua");
+                        System.out.println("4. Adicionar processos durante execucao");
+                        System.out.println("5. Demonstrar salvamento de contexto");
+                        System.out.println("6. Demonstrar preempcao por tempo");
+                        System.out.println("7. Monitorar status do escalonador");
+                        System.out.println("8. Simulacao completa de escalonamento");
+                        System.out.println("0. Voltar");
+                        System.out.println();
+                        System.out.print("Escolha uma opcao: ");
 
-                // === CRIAÇÃO DO REPOSITÓRIO DE PROGRAMAS ===
-                Program[] progs = {
-                                new Program("programa1", prog1), // Matemática
-                                new Program("programa2", prog2), // Loop
-                                new Program("programa3", prog3), // Memória
-                                new Program("programa4", prog4), // Fibonacci
-                                new Program("programa5", prog5), // Simples
-                                new Program("programa6", prog6) // Syscall
-                };
+                        String opcao = scanner.nextLine().trim();
 
-                programs.progs = progs;
+                        switch (opcao) {
+                                case "1":
+                                        demonstrarCarregamentoMultiplo();
+                                        break;
+                                case "2":
+                                        demonstrarExecAll();
+                                        break;
+                                case "3":
+                                        demonstrarExecucaoContinua();
+                                        break;
+                                case "4":
+                                        demonstrarAdicaoDuranteExecucao();
+                                        break;
+                                case "5":
+                                        demonstrarSalvamentoContexto();
+                                        break;
+                                case "6":
+                                        demonstrarPreempcao();
+                                        break;
+                                case "7":
+                                        monitorarEscalonador();
+                                        break;
+                                case "8":
+                                        simulacaoCompleta();
+                                        break;
+                                case "0":
+                                        continuar = false;
+                                        break;
+                                default:
+                                        System.out.println("Opcao invalida!");
+                                        pausar();
+                                        break;
+                        }
+                }
+        }
+
+        /**
+         * Demonstra o carregamento de múltiplos processos
+         */
+        private static void demonstrarCarregamentoMultiplo() {
+                System.out.println("\n========================================");
+                System.out.println("    CARREGAMENTO MULTIPLO");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("Esta demonstracao mostra como carregar multiplos processos");
+                System.out.println("para o escalonamento simultaneo:");
+                System.out.println();
+                System.out.println("- Cada processo e carregado no ProcessManager");
+                System.out.println("- Processos ficam prontos para escalonamento");
+                System.out.println("- Sistema gerencia automaticamente a memoria");
+                System.out.println();
+
+                pausar();
+
+                System.out.println("Carregando processos para escalonamento...");
+                System.out.println();
+
+                carregarProcessoInterativo("fibonacci", "Calcula Fibonacci - processo CPU intensivo");
+                carregarProcessoInterativo("contador", "Contador 1-5 - processo medio");
+                carregarProcessoInterativo("matematica", "Operacoes matematicas - processo rapido");
+                carregarProcessoInterativo("hello", "Programa simples - processo muito rapido");
+
+                System.out.println("\nStatus apos carregamento:");
+                so.showSystemStatus();
+
+                pausar();
+        }
+
+        /**
+         * Carrega um processo de forma interativa
+         */
+        private static void carregarProcessoInterativo(String programa, String descricao) {
+                System.out.println("Carregando: " + descricao);
+                System.out.print("Pressione ENTER para executar: loadProgram " + programa + " ... ");
+                scanner.nextLine();
+
+                boolean sucesso = so.loadProgram(programa);
+                if (sucesso) {
+                        System.out.println("Processo " + programa + " carregado no escalonador");
+                } else {
+                        System.out.println("Falha no carregamento");
+                }
+                System.out.println();
+        }
+
+        /**
+         * Demonstra o comando execAll
+         */
+        private static void demonstrarExecAll() {
+                System.out.println("\n========================================");
+                System.out.println("        COMANDO EXECALL");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("O comando execAll executa todos os processos de forma escalonada:");
+                System.out.println("- Inicia escalonamento round-robin");
+                System.out.println("- Cada processo executa por uma fatia de tempo");
+                System.out.println("- Troca de contexto automatica");
+                System.out.println("- Continua ate todos os processos terminarem");
+                System.out.println();
+
+                // Verificar se há processos carregados
+                System.out.println("Status atual do sistema:");
+                so.showSystemStatus();
+                System.out.println();
+
+                System.out.print("Deseja carregar processos primeiro? (s/N): ");
+                String resposta = scanner.nextLine().trim().toLowerCase();
+
+                if (resposta.equals("s") || resposta.equals("sim")) {
+                        System.out.println("\nCarregando processos...");
+                        so.loadProgram("fibonacci");
+                        so.loadProgram("contador");
+                        so.loadProgram("matematica");
+                }
+
+                System.out.println("\nExecutando comando: execAll");
+                System.out.println("============================");
+                System.out.print("Pressione ENTER para iniciar execucao escalonada...");
+                scanner.nextLine();
+
+                so.execAll();
+
+                System.out.println("\nExecucao escalonada concluida!");
+                pausar();
+        }
+
+        /**
+         * Demonstra execução contínua
+         */
+        private static void demonstrarExecucaoContinua() {
+                System.out.println("\n========================================");
+                System.out.println("        EXECUCAO CONTINUA");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("A execucao continua permite:");
+                System.out.println("- Escalonamento em thread separada");
+                System.out.println("- Execucao em background");
+                System.out.println("- Adicao de processos durante execucao");
+                System.out.println("- Controle interativo do usuario");
+                System.out.println();
+
+                pausar();
+
+                // Carregar alguns processos
+                System.out.println("Preparando processos para execucao continua...");
+                so.loadProgram("contador");
+                so.loadProgram("fibonacci");
+
+                System.out.println("\nIniciando execucao continua...");
+                System.out.print("Pressione ENTER para iniciar...");
+                scanner.nextLine();
+
+                so.startContinuousExecution();
+
+                System.out.println("Execucao continua iniciada!");
+                System.out.println("Aguardando 3 segundos para observar execucao...");
+
+                try {
+                        Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                }
+
+                System.out.println("\nStatus durante execucao continua:");
+                so.showSystemStatus();
+
+                System.out.println("\nParando execucao continua...");
+                System.out.print("Pressione ENTER para parar...");
+                scanner.nextLine();
+
+                so.stopContinuousExecution();
+                System.out.println("Execucao continua parada!");
+
+                pausar();
+        }
+
+        /**
+         * Demonstra adição de processos durante execução
+         */
+        private static void demonstrarAdicaoDuranteExecucao() {
+                System.out.println("\n========================================");
+                System.out.println("    ADICAO DURANTE EXECUCAO");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("Esta demonstracao mostra como adicionar processos");
+                System.out.println("enquanto o escalonamento esta ativo:");
+                System.out.println("- Sistema continua executando");
+                System.out.println("- Novos processos entram na fila");
+                System.out.println("- Escalonamento se adapta automaticamente");
+                System.out.println();
+
+                pausar();
+
+                // Iniciar com alguns processos
+                System.out.println("Iniciando com processos base...");
+                so.loadProgram("contador");
+                so.startContinuousExecution();
+
+                System.out.println("Execucao continua ativa!");
+                System.out.println("\nAdicionando processos durante execucao...");
+
+                try {
+                        Thread.sleep(1000);
+                        System.out.println("Adicionando fibonacci...");
+                        so.loadProgram("fibonacci");
+
+                        Thread.sleep(1000);
+                        System.out.println("Adicionando matematica...");
+                        so.loadProgram("matematica");
+
+                        Thread.sleep(2000);
+                        System.out.println("\nStatus com processos adicionados:");
+                        so.showSystemStatus();
+
+                        Thread.sleep(1000);
+
+                } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                }
+
+                System.out.println("\nParando execucao...");
+                so.stopContinuousExecution();
+
+                pausar();
+        }
+
+        /**
+         * Demonstra salvamento de contexto
+         */
+        private static void demonstrarSalvamentoContexto() {
+                System.out.println("\n========================================");
+                System.out.println("      SALVAMENTO DE CONTEXTO");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("O salvamento de contexto e fundamental para o escalonamento:");
+                System.out.println("- PCB armazena estado completo do processo");
+                System.out.println("- Registradores sao salvos/restaurados");
+                System.out.println("- Program Counter (PC) e preservado");
+                System.out.println("- Processo continua de onde parou");
+                System.out.println();
+
+                pausar();
+
+                // Criar processo e mostrar contexto
+                System.out.println("Criando processo para demonstrar contexto...");
+                int id = so.criarProcesso("fibonacci");
+
+                System.out.println("\nPCB inicial do processo:");
+                so.dumpProcesso(id);
+
+                System.out.println("\nExecutando algumas instrucoes...");
+                System.out.print("Pressione ENTER para executar...");
+                scanner.nextLine();
+
+                so.executarProcesso(id);
+
+                System.out.println("\nPCB apos execucao (contexto salvo):");
+                so.dumpProcesso(id);
+
+                System.out.println("\nObserve como o PC e registradores foram atualizados!");
+
+                pausar();
+        }
+
+        /**
+         * Demonstra preempção por tempo
+         */
+        private static void demonstrarPreempcao() {
+                System.out.println("\n========================================");
+                System.out.println("      PREEMPCAO POR TEMPO");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("A preempcao por tempo garante fairness:");
+                System.out.println("- Cada processo executa por Delta=5 ciclos");
+                System.out.println("- Apos o tempo, processo e preemptado");
+                System.out.println("- Contexto e salvo automaticamente");
+                System.out.println("- Proximo processo da fila assume CPU");
+                System.out.println();
+
+                pausar();
+
+                System.out.println("Carregando processos para demonstrar preempcao...");
+                so.loadProgram("fibonacci"); // Processo longo
+                so.loadProgram("contador"); // Processo médio
+                so.loadProgram("hello"); // Processo curto
+
+                System.out.println("\nIniciando execucao com preempcao...");
+                System.out.print("Pressione ENTER para ver preempcao em acao...");
+                scanner.nextLine();
+
+                // Executar com observação de preempção
+                so.execAll();
+
+                System.out.println("\nObserve como os processos foram alternados!");
+                System.out.println("Cada um executou por sua fatia de tempo antes da troca.");
+
+                pausar();
+        }
+
+        /**
+         * Monitora o status do escalonador
+         */
+        private static void monitorarEscalonador() {
+                System.out.println("\n========================================");
+                System.out.println("    MONITORAMENTO DO ESCALONADOR");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("O monitoramento permite observar:");
+                System.out.println("- Processo atual em execucao");
+                System.out.println("- Processos na fila de prontos");
+                System.out.println("- Tempo atual da fatia");
+                System.out.println("- Status da memoria");
+                System.out.println();
+
+                pausar();
+
+                // Carregar processos
+                System.out.println("Preparando sistema para monitoramento...");
+                so.loadProgram("fibonacci");
+                so.loadProgram("contador");
+                so.loadProgram("matematica");
+
+                System.out.println("\nStatus inicial:");
+                so.showSystemStatus();
+
+                System.out.println("\nIniciando execucao continua para monitoramento...");
+                so.startContinuousExecution();
+
+                // Monitorar por alguns ciclos
+                for (int i = 1; i <= 3; i++) {
+                        try {
+                                Thread.sleep(2000);
+                                System.out.println("\nStatus - Ciclo " + i + ":");
+                                so.showSystemStatus();
+                        } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                                break;
+                        }
+                }
+
+                System.out.println("\nParando monitoramento...");
+                so.stopContinuousExecution();
+
+                pausar();
+        }
+
+        /**
+         * Simulação completa de escalonamento
+         */
+        private static void simulacaoCompleta() {
+                System.out.println("\n========================================");
+                System.out.println("    SIMULACAO COMPLETA DE ESCALONAMENTO");
+                System.out.println("========================================");
+                System.out.println();
+
+                System.out.println("Esta simulacao demonstra todos os aspectos do escalonamento:");
+                System.out.println("- Carregamento de multiplos processos");
+                System.out.println("- Execucao escalonada (execAll)");
+                System.out.println("- Execucao continua");
+                System.out.println("- Adicao dinamica de processos");
+                System.out.println("- Monitoramento em tempo real");
+                System.out.println();
+
+                System.out.print("Deseja executar a simulacao completa? (s/N): ");
+                String resposta = scanner.nextLine().trim().toLowerCase();
+
+                if (!resposta.equals("s") && !resposta.equals("sim")) {
+                        return;
+                }
+
+                System.out.println("\nINICIANDO SIMULACAO COMPLETA");
+                System.out.println("============================");
+
+                // Fase 1: Carregamento
+                System.out.println("\nFASE 1: Carregamento de Processos");
+                so.loadProgram("fibonacci");
+                so.loadProgram("contador");
+                System.out.println("Processos iniciais carregados");
+
+                pausar();
+
+                // Fase 2: execAll
+                System.out.println("\nFASE 2: Execucao Escalonada (execAll)");
+                so.execAll();
+                System.out.println("Execucao escalonada concluida");
+
+                pausar();
+
+                // Fase 3: Execução contínua
+                System.out.println("\nFASE 3: Execucao Continua");
+                so.loadProgram("matematica");
+                so.startContinuousExecution();
+
+                try {
+                        Thread.sleep(2000);
+                        System.out.println("Adicionando processo durante execucao...");
+                        so.loadProgram("hello");
+                        Thread.sleep(2000);
+                        System.out.println("Status final:");
+                        so.showSystemStatus();
+                        Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                }
+
+                so.stopContinuousExecution();
+                System.out.println("Execucao continua finalizada");
+
+                System.out.println("\nSIMULACAO COMPLETA FINALIZADA!");
+                System.out.println("Todos os aspectos do escalonamento foram demonstrados.");
+
+                pausar();
+        }
+
+        /**
+         * Utilitário para pausar
+         */
+        private static void pausar() {
+                System.out.print("\nPressione ENTER para continuar...");
+                scanner.nextLine();
         }
 }
